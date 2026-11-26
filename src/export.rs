@@ -50,14 +50,19 @@ pub trait ExportTarget {
 /// The status for a failed send to `agent`: the cause first, since a narrow pane keeps only the
 /// line's start, then the way out.
 pub fn send_failure(error: &herdr::SendError, agent: Option<&str>, copy: &str) -> String {
+    use crate::rex::RexError as R;
     use herdr::{HerdrError as H, SendError as S};
     let cause = match error {
         S::AtPrompt => return format!("answer {}'s prompt first", agent.unwrap_or("the agent")),
-        S::Herdr(H::PaneGone) => format!("{} closed", agent.unwrap_or("the agent")),
+        S::Herdr(H::PaneGone) | S::Rex(R::PaneGone) => {
+            format!("{} closed", agent.unwrap_or("the agent"))
+        }
         S::NoAgent => "no agent in this workspace".to_string(),
         S::TooLarge => "review too large to send".to_string(),
         S::Herdr(H::Unanswered) => "herdr didn't answer".to_string(),
         S::Herdr(H::Refused(_) | H::Unreadable) => "herdr refused the send".to_string(),
+        S::Rex(R::Unanswered) => "rex didn't answer".to_string(),
+        S::Rex(R::Refused | R::Unreadable) => "rex refused the send".to_string(),
     };
     format!("{cause}, press {copy} to copy")
 }
@@ -199,9 +204,9 @@ impl ExportTarget for Agent {
 
     /// An agent at a prompt refuses: the picker's rows can be minutes old.
     fn export(&self, text: &str) -> Result<()> {
-        herdr::send_text(&self.pane, text)?;
+        crate::host::send_text(&self.pane, text)?;
         // A focus failure must not fail a delivered export.
-        let _ = herdr::focus(&self.pane);
+        crate::host::focus(&self.pane);
         Ok(())
     }
 }
@@ -242,6 +247,7 @@ mod tests {
     #[test]
     fn a_failed_send_or_copy_says_what_to_do() {
         use crate::herdr::{HerdrError as H, SendError as S};
+        use crate::rex::RexError as R;
         let agent = Agent { pane: "w8:p1".into(), name: "release-bot".into() };
         let rows = [
             (S::Herdr(H::PaneGone), "release-bot closed, press y to copy"),
@@ -257,6 +263,10 @@ mod tests {
             ),
             (S::Herdr(H::Refused(None)), "herdr refused the send, press y to copy"),
             (S::Herdr(H::Unreadable), "herdr refused the send, press y to copy"),
+            (S::Rex(R::PaneGone), "release-bot closed, press y to copy"),
+            (S::Rex(R::Unanswered), "rex didn't answer, press y to copy"),
+            (S::Rex(R::Refused), "rex refused the send, press y to copy"),
+            (S::Rex(R::Unreadable), "rex refused the send, press y to copy"),
         ];
         for (error, line) in rows {
             let error = anyhow::Error::from(error);

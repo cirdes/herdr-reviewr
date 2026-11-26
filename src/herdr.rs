@@ -103,6 +103,8 @@ pub enum HerdrError {
 pub enum SendError {
     /// herdr failed a call the send made.
     Herdr(HerdrError),
+    /// rex failed a call the send made.
+    Rex(crate::rex::RexError),
     /// The named agent waits on a permission or confirm prompt, which would drop a paste.
     AtPrompt,
     /// The workspace holds no agent to send to.
@@ -121,6 +123,7 @@ impl std::fmt::Display for SendError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Herdr(error) => error.fmt(f),
+            Self::Rex(error) => error.fmt(f),
             Self::AtPrompt => write!(f, "the agent is at a prompt"),
             Self::NoAgent => write!(f, "no agent in the workspace"),
             Self::TooLarge => write!(f, "the review is over the {MAX_REQUEST_BYTES}-byte send cap"),
@@ -162,7 +165,7 @@ fn call(args: &[&str]) -> Result<String, HerdrError> {
     let deadline = Instant::now() + CALL_BOUND;
     match crate::proc::run_tree(cmd, || Instant::now() >= deadline) {
         Ok(stdout) => Ok(stdout),
-        Err(RunError::Failed { stderr }) => {
+        Err(RunError::Failed { stderr, .. }) => {
             logln!("herdr {args:?} failed: {}", stderr.trim());
             Err(HerdrError::refused(error_code(&stderr)))
         }

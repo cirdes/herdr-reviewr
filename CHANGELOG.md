@@ -6,6 +6,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Send works inside Rex.** Run reviewr in a [Rex](https://www.superlogical.com/rex) terminal and `s`
+  pastes the review into the coding agent beside it, unsubmitted, then focuses it. `S` picks among the
+  session's agents, labelled by window. An agent at a prompt still refuses, as under herdr. Last turn
+  stays herdr-only for now.
+
 ## [0.52.2] — 2026-11-15
 
 ### Fixed

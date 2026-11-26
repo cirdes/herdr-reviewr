@@ -6,7 +6,7 @@ herdr-reviewr is a Rust TUI (ratatui) code-review pane: it runs in a [herdr](htt
 
 ## Commands
 
-- `just test` — full test suite, with the herdr environment stripped so no test can reach a live agent pane. Inside herdr, run a single test the same way: `env -u HERDR_WORKSPACE_ID -u HERDR_PANE_ID -u HERDR_SOCKET_PATH HERDR_BIN_PATH=false cargo test <name>` (unit tests live beside the code, integration tests in `tests/`: `cargo test --test app_flow <name>`).
+- `just test` — full test suite, with the herdr and Rex environments stripped so no test can reach a live agent pane. Inside herdr or Rex, run a single test the same way: `env -u HERDR_WORKSPACE_ID -u HERDR_PANE_ID -u HERDR_SOCKET_PATH -u REX_BLOCK -u REX_SESSION -u REX_SERVER HERDR_BIN_PATH=false REX_BIN_PATH=false cargo test <name>` (unit tests live beside the code, integration tests in `tests/`: `cargo test --test app_flow <name>`).
 - `just lint` — clippy with warnings as errors. `just fmt` / `just fmt-check` — rustfmt.
 - `just ci` — what CI's unix job runs (fmt-check, lint, test, release build, and the idle check: `scripts/idle_check.py` proves an idle, hidden, or switched pane wakes for nothing and starts no process). The Windows jobs run on CI only: dispatch them on a branch with `gh workflow run ci.yml --ref <branch>`.
 - `just qa-install` — put a local build into the user's real herdr panes. See "QA install" below before using it.

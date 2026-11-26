@@ -347,7 +347,7 @@ pub(crate) fn run_provider<E>(
     match crate::proc::run_tree(cmd, || cancelled.load(std::sync::atomic::Ordering::Acquire)) {
         Ok(stdout) => Ok(stdout),
         Err(RunError::NotFound) => Err(not_found),
-        Err(RunError::Failed { stderr }) => Err(classify(&stderr)),
+        Err(RunError::Failed { stderr, .. }) => Err(classify(&stderr)),
         Err(RunError::Io(error)) => Err(other(error)),
         Err(RunError::Stopped) => Err(other("request cancelled".into())),
     }

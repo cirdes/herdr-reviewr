@@ -2,7 +2,7 @@
 
 use std::env;
 use std::ffi::{OsStr, OsString};
-use std::io::{self, Read};
+use std::io::{self, Read, Write};
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::sync::OnceLock;
@@ -96,8 +96,8 @@ pub fn on_path(name: &str) -> bool {
 pub(crate) enum RunError {
     /// The program is not there to run.
     NotFound,
-    /// It ran and exited non-zero; `stderr` carries its diagnostic.
-    Failed { stderr: String },
+    /// It ran and exited non-zero; `stderr` carries its diagnostic, `code` its exit status.
+    Failed { stderr: String, code: Option<i32> },
     /// Spawning or waiting failed at the OS level.
     Io(String),
     /// The caller's stop came first: a cancel, or a deadline.
@@ -106,9 +106,19 @@ pub(crate) enum RunError {
 
 /// Run `cmd` in its own process tree to its stdout; once `stop` says so, the whole tree ends.
 pub(crate) fn run_tree(cmd: Command, stop: impl Fn() -> bool) -> Result<String, RunError> {
+    run_tree_fed(cmd, None, stop)
+}
+
+/// [`run_tree`] with `input` written to the tool's stdin, then closed; no input means no stdin.
+pub(crate) fn run_tree_fed(
+    cmd: Command,
+    input: Option<Vec<u8>>,
+    stop: impl Fn() -> bool,
+) -> Result<String, RunError> {
     let mut cmd = CommandWrap::from(cmd);
-    // No stdin: the terminal belongs to the pane.
-    cmd.command_mut().stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::piped());
+    // No stdin unless fed: the terminal belongs to the pane.
+    let stdin = if input.is_some() { Stdio::piped() } else { Stdio::null() };
+    cmd.command_mut().stdin(stdin).stdout(Stdio::piped()).stderr(Stdio::piped());
     #[cfg(unix)]
     cmd.wrap(process_wrap::std::ProcessGroup::leader());
     #[cfg(windows)]
@@ -118,6 +128,10 @@ pub(crate) fn run_tree(cmd: Command, stop: impl Fn() -> bool) -> Result<String, 
         Err(error) if error.kind() == io::ErrorKind::NotFound => return Err(RunError::NotFound),
         Err(error) => return Err(RunError::Io(error.to_string())),
     };
+    // Written on a thread of its own, so a tool that answers before reading cannot deadlock.
+    if let (Some(input), Some(mut pipe)) = (input, child.stdin().take()) {
+        thread::spawn(move || pipe.write_all(&input));
+    }
     // Drained while polling, so a large answer cannot block the child.
     let stdout = read_all(child.stdout().take());
     let stderr = read_all(child.stderr().take());
@@ -151,7 +165,10 @@ pub(crate) fn run_tree(cmd: Command, stop: impl Fn() -> bool) -> Result<String, 
     if status.success() {
         return Ok(String::from_utf8_lossy(&stdout).into_owned());
     }
-    Err(RunError::Failed { stderr: String::from_utf8_lossy(&stderr).into_owned() })
+    Err(RunError::Failed {
+        stderr: String::from_utf8_lossy(&stderr).into_owned(),
+        code: status.code(),
+    })
 }
 
 /// Read `pipe` to its end on a thread of its own.

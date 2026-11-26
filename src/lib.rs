@@ -15,6 +15,7 @@ pub mod gitlab;
 pub mod herdr;
 pub mod herdr_socket;
 pub mod highlight;
+pub mod host;
 mod input;
 pub mod keymap;
 #[macro_use]
@@ -24,6 +25,7 @@ pub(crate) mod marks;
 pub mod model;
 pub mod proc;
 pub(crate) mod rendered;
+pub mod rex;
 pub mod roles;
 pub mod schedule;
 pub mod search;

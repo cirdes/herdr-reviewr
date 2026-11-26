@@ -16,10 +16,10 @@ fmt-check:
 lint:
     cargo clippy --all-targets --all-features -- -D warnings
 
-# run the test suite, cut off from the herdr it may run inside: a test that reaches `herdr`
-# gets a binary that refuses and no socket, never a live agent pane
+# run the test suite, cut off from the herdr or Rex it may run inside: a test that reaches `herdr`
+# or `rex` gets a binary that refuses and no socket, never a live agent pane
 test:
-    env -u HERDR_WORKSPACE_ID -u HERDR_PANE_ID -u HERDR_SOCKET_PATH HERDR_BIN_PATH=false cargo test --all-features
+    env -u HERDR_WORKSPACE_ID -u HERDR_PANE_ID -u HERDR_SOCKET_PATH -u REX_BLOCK -u REX_SESSION -u REX_SERVER HERDR_BIN_PATH=false REX_BIN_PATH=false cargo test --all-features
 
 # build (debug)
 build:

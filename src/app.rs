@@ -12,7 +12,7 @@ use crate::export::{Agent, ExportTarget, format_review};
 use crate::file_list::{self, Entry, RowKind};
 use crate::forge;
 use crate::git;
-use crate::herdr::{self, AgentChoice, SendTarget};
+use crate::herdr::{AgentChoice, SendTarget};
 use crate::highlight::Highlighter;
 use crate::logln;
 use crate::marks::{MarkMap, Unit, diff_lines};
@@ -5101,7 +5101,7 @@ impl App {
             self.status = "no comments yet".to_string();
             return;
         }
-        match herdr::send_target(&self.herdr.ids, choose) {
+        match crate::host::send_target(&self.herdr.ids, choose) {
             Ok(SendTarget::One(agent)) => self.export_to_agent(&agent),
             Ok(SendTarget::Many(rows)) => self.open_picker(rows),
             Err(e) => self.status = crate::export::send_failure(&e, None, &self.copy_key()),

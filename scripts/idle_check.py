@@ -161,7 +161,7 @@ def main():
         os.makedirs(config_dir)
         herdr_socket = os.path.join(root, "herdr.sock")
         herdr = FakeHerdr(herdr_socket)
-        env = {k: v for k, v in os.environ.items() if not k.startswith("HERDR_")}
+        env = {k: v for k, v in os.environ.items() if not k.startswith(("HERDR_", "REX_"))}
         env.update(
             TERM="xterm-256color",
             HERDR_REVIEW_LOG=log,
