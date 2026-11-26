@@ -1,0 +1,42 @@
+src/host.rs
+  s_9a60b002b6fdc1::t_00b390cc003d0b 1-68
+src/rex.rs
+  s_9a60b002b6fdc1::t_84cb11b6424db4 1-395,397,399,405,407,411-412
+  s_9a60b002b6fdc1::t_c1818474b6b583 396,398,400-404,406,408-410,413-422
+CHANGELOG.md
+  s_9a60b002b6fdc1::t_255aa79a6dae0f 9-15
+AGENTS.md
+  s_9a60b002b6fdc1::t_7554051429b7a5 9
+justfile
+  s_9a60b002b6fdc1::t_a8260036b6df0c 19-20,22
+scripts/idle_check.py
+  s_9a60b002b6fdc1::t_8a95fd8bbd0b5a 164
+src/app.rs
+  s_9a60b002b6fdc1::t_090accc8f897c0 15,5104
+src/export.rs
+  s_9a60b002b6fdc1::t_c24c0fd03a92aa 53,57-59,64-65,207,209,250,266-269
+src/forge.rs
+  s_9a60b002b6fdc1::t_4917cfa4b8f46c 350
+src/herdr.rs
+  s_9a60b002b6fdc1::t_d7ce3c7d037117 106-107,126,168
+src/lib.rs
+  s_9a60b002b6fdc1::t_a033293f566693 18,28
+src/proc.rs
+  s_9a60b002b6fdc1::t_acf81346e1811b 5,99-100,109-117,119-121,131-134,168-171
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "814d4c036d4a09dde9bb02b27630d9fe64da7423",
+  "prompts": {},
+  "sessions": {
+    "s_9a60b002b6fdc1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1a093a25-5ed3-4cf5-ad36-296b31ddb604",
+        "model": "unknown"
+      },
+      "human_author": "Cirdes <cirdes@linkana.com>"
+    }
+  }
+}
